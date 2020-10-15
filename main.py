@@ -1,8 +1,9 @@
 import alpaca_trade_api as tradeapi
+import keys
 
-api_key = "PKWPQQK01YGTSXYJR5HE"
-api_secret = "MlM8p9Y83ESzvElLJY3QBBss6Zv7XHIGXQ86WAW1"
-base_url = 'https://paper-api.alpaca.markets'
+api_key = keys.api_key
+api_secret = keys.api_secret
+base_url = keys.base_url
 
 # instantiate REST API
 api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
