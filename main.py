@@ -1,4 +1,4 @@
-import alpaca_trade_api as tradeapi
+'''import alpaca_trade_api as tradeapi
 import keys
 
 api_key = keys.api_key
@@ -26,3 +26,4 @@ week_open = aapl_bars[0].o
 week_close = aapl_bars[-1].c
 percent_change = (week_close - week_open) / week_open * 100
 print('AAPL moved {}% over the last {} days'.format(percent_change, 5))
+'''
