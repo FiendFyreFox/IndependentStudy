@@ -24,7 +24,8 @@ def make_stock():
     s = stock()
     return s
 
-def search(start, end, numStocks):
+
+def search(numStocks, start=0, end=len(df["Symbol"]) - 1):
     tickers = []
 
     for i in range(0, numStocks):
@@ -52,7 +53,11 @@ def search(start, end, numStocks):
                 item.ticker = stock
                 break
 
-    return tickers
+    ret = []
+    for t in tickers:
+        ret.append(t.ticker)
+
+    return ret
 
 #print(f'The greatest increase was {Ticker1}, which went up by {Increase1} %. On {datetime.date.today() - datetime.timedelta(days=1)} it closed at {yf.Ticker(Ticker1).history(start=datetime.date.today() - datetime.timedelta(days=1), interval="1d")["Close"][0]}')
 
@@ -60,12 +65,11 @@ def search(start, end, numStocks):
 #today = tHist[1]
 #esterday = tHist[0]
 #print(f'{Ticker1} went up from {yesterday} on {datetime.date.today() - datetime.timedelta(days=2)} to {today} on {datetime.date.today() - datetime.timedelta(days=1)}')
-#tickers = search(30, 100, 5)
 
-#for t in tickers:
- #   Analysis.analyze(t.ticker, 20)
 
-Analysis.plot("BAC", datetime.date.today() - datetime.timedelta(days=30), datetime.date.today())
+
+
+#Analysis.plot("BAC", datetime.date.today() - datetime.timedelta(days=30), datetime.date.today())
 
 '''
 tHist = yf.Ticker("NFLX").history(start=datetime.date.today() - datetime.timedelta(days=2), period="1d")["Close"]

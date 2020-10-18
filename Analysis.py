@@ -1,6 +1,5 @@
 import pandas as pd
 import yfinance as yf
-from matplotlib import pyplot as plt
 import numpy as np
 import datetime
 
@@ -23,7 +22,7 @@ df = pd.read_csv('S&P500-Info.csv')
 
 '''
 
-def analyze(TMax, desiredTrend=15):
+def analyze(TMax, desiredTrend=15, desiredConfidence = 3.0):
     ticker = yf.Ticker(TMax)
     hist = ticker.history(period="1mo", interval="1d")
 
@@ -54,19 +53,17 @@ def analyze(TMax, desiredTrend=15):
     y=np.array(data)
     z = np.polyfit(x,y,1)
 
-    if z[0] * 100 >= desiredTrend / 100 and yDelta > stdDev:
-        print(f"I recommend investing in {TMax} stock because it is trending at {z[0] * 100} and recently broke 1 standard deviation by {yDelta - stdDev}")
-        plt.plot(normalizedCloses)
-        plt.title(TMax)
-        plt.show()
+    confidence = z[0] * 1000 + (2 * yDelta - stdDev) - (stdDev / 2)
+
+    if z[0] * 100 >= desiredTrend / 100 and yDelta > stdDev and confidence > desiredConfidence:
+        print(f"I recommend investing in {TMax} stock because it is trending at {z[0] * 100} and recently broke 1 standard deviation by {yDelta - stdDev}. My confidence in this stock is {confidence}")
+        #plt.plot(normalizedCloses)
+        #plt.title(TMax)
+        #plt.show()
+        return confidence
     else:
         print(f"I do not recommend {TMax} stock")
+        return 0.0
 
 
-def plot(t, start, end, interval=1):
-    ticker = yf.Ticker(t)
-    hist = ticker.history(start=start, end=end, interval=f"{interval}d")
-    closes = hist["Close"]
-    plt.plot(closes)
-    plt.title(t)
-    plt.show()
+
