@@ -38,9 +38,9 @@ def search(numStocks, start=0, end=len(df["Symbol"]) - 1):
         ticker = yf.Ticker(stock)
 
         try:
-            tHist = ticker.history(start=datetime.date.today() - datetime.timedelta(days=2), period="1d")["Close"]
-            today = tHist[1]
-            yesterday = tHist[0]
+            tHist = ticker.history(start=datetime.date.today() - datetime.timedelta(days=5), period="1d")["Close"]
+            today = tHist[len(tHist) - 1]
+            yesterday = tHist[len(tHist) - 2]
         except:
             continue
         delta = (today / yesterday - 1) * 100
@@ -58,15 +58,6 @@ def search(numStocks, start=0, end=len(df["Symbol"]) - 1):
         ret.append(t.ticker)
 
     return ret
-
-#print(f'The greatest increase was {Ticker1}, which went up by {Increase1} %. On {datetime.date.today() - datetime.timedelta(days=1)} it closed at {yf.Ticker(Ticker1).history(start=datetime.date.today() - datetime.timedelta(days=1), interval="1d")["Close"][0]}')
-
-#tHist = yf.Ticker(Ticker1).history(start=datetime.date.today() - datetime.timedelta(days=2), period="1d")["Close"]
-#today = tHist[1]
-#esterday = tHist[0]
-#print(f'{Ticker1} went up from {yesterday} on {datetime.date.today() - datetime.timedelta(days=2)} to {today} on {datetime.date.today() - datetime.timedelta(days=1)}')
-
-
 
 
 #Analysis.plot("BAC", datetime.date.today() - datetime.timedelta(days=30), datetime.date.today())

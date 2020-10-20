@@ -42,8 +42,8 @@ def analyze(TMax, desiredTrend=15, desiredConfidence = 3.0):
     variance = sum(deviances) / len(deviances)
 
     stdDev = variance ** (1/2)
-    today = closes[len(closes) - 2]
-    yesterday = closes[len(closes) - 3]
+    today = closes[len(closes) - 1]
+    yesterday = closes[len(closes) - 2]
     yDelta = today - average
 
 
@@ -56,7 +56,7 @@ def analyze(TMax, desiredTrend=15, desiredConfidence = 3.0):
     confidence = z[0] * 1000 + (2 * yDelta - stdDev) - (stdDev / 2)
 
     if z[0] * 100 >= desiredTrend / 100 and yDelta > stdDev and confidence > desiredConfidence:
-        print(f"I recommend investing in {TMax} stock because it is trending at {z[0] * 100} and recently broke 1 standard deviation by {yDelta - stdDev}. My confidence in this stock is {confidence}")
+        print(f"I recommend investing in {TMax} stock because it is trending at {z[0] * 100} and recently broke 1 standard deviation by {((yDelta / stdDev) - 1) * 100} %. My confidence in this stock is {confidence}")
         #plt.plot(normalizedCloses)
         #plt.title(TMax)
         #plt.show()

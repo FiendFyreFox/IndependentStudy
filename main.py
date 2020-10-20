@@ -1,19 +1,16 @@
 import math
 
 import alpaca_trade_api as tradeapi
-import keys
+from config import *
 import pandas as pd
-import PickStocks
-import Analysis
+import PickStocks, Analysis, orders
 import json
 import datetime
 
 import yfinance as yf
 from matplotlib import pyplot as plt
 '''
-api_key = keys.api_key
-api_secret = keys.api_secret
-base_url = keys.base_url
+
 
 # instantiate REST API
 api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
@@ -50,8 +47,30 @@ def invest(amount, confidence, stocks, start=0, end='max'):
             shares = math.floor((cash_on_hand / price) * buy)
             amount = price * shares
             log(datetime.datetime.now(), tickers[i], shares, amount)
-        #buy(c[0], c[1]/sum(confidences))
+            orders.create_order(tickers[i], shares, "buy", type='market', time_in_force='gtc')
 
+def close_day():
+
+    with open("tradebook.json", 'r') as f:
+        trades = json.load(f)
+
+    for trade in trades["outstanding"]:
+        orders.create_order(trade["stock"], trade["shares"], side="sell", type="market", time_in_force="gtc")
+        trades["closed"][trade] = trade
+        trades["closed"][trade]["stock"] = trade["stock"]
+        trades["closed"][trade]["shares"] = trade["shares"]
+        trades["closed"][trade]["amount"] = trade["amount"]
+        del trade
+
+    total = int(orders.get_account()['portfolio_value'])
+
+    print(f'Today a profit of ${total - trades["total_value"]} was made. The total portfolio value now stands at {total}')
+    trades["total_value"] = total
+
+    invest(total, 10.0, 30)
+
+    with open("tradebook.json", 'w') as f:
+        json.dump(trades, f, indent=2)
 
 
 def log(time, stock, shares, amount, outstanding = True):
@@ -79,9 +98,13 @@ def clearTradeBook():
         trades = json.load(f)
     trades["outstanding"] = {}
     trades["closed"] = {}
+    trades["total_equity"] = {}
     with open("tradebook.json", 'w') as f:
         json.dump(trades, f, indent=2)
     print("Successfully cleared the tradebook")
+
+def analyze(symbol):
+    print(Analysis.analyze(symbol))
 
 def plot(t, start = datetime.date.today() - datetime.timedelta(days=30), end = datetime.date.today(), interval=1):
     ticker = yf.Ticker(t)
@@ -91,20 +114,14 @@ def plot(t, start = datetime.date.today() - datetime.timedelta(days=30), end = d
     plt.title(t)
     plt.show()
 
+def order(s, q, side, type, tif='day'):
+    print(orders.create_order(s, q, side, type, tif))
+
 while True:
     i = input("What is your command? >>>")
     if i == "exit":
         exit()
     exec(i)
 
-'''
-barset = api.get_barset('AAPL', 'day', limit=5)
 
-aapl_bars = barset['AAPL']
-# See how much AAPL moved in that timeframe.
-week_open = aapl_bars[0].o
-week_close = aapl_bars[-1].c
-percent_change = (week_close - week_open) / week_open * 100
-print('AAPL moved {}% over the last {} days'.format(percent_change, 5))
-'''
 
