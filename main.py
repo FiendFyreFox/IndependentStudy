@@ -1,6 +1,6 @@
 import math
+import random
 
-import alpaca_trade_api as tradeapi
 from config import *
 import pandas as pd
 import PickStocks, Analysis, orders
@@ -9,6 +9,8 @@ import datetime
 
 import yfinance as yf
 from matplotlib import pyplot as plt
+import matplotlib.lines as mlines
+import matplotlib.transforms as mtransforms
 '''
 
 
@@ -25,6 +27,39 @@ APCA_API_BASE_URL = base_url
 
 api = tradeapi.REST(key_id=api_key, secret_key=api_secret, base_url=base_url, api_version='v2')
 '''
+
+def backtest(stocks, start_date, holding_time, confidence=5, start=0, end='max'):
+    buy_date = datetime.datetime(start_date[0], start_date[1], start_date[2])
+
+    if end == 'max':
+        tickers = PickStocks.search(stocks, start, date=buy_date)
+    else:
+        tickers = PickStocks.search(stocks, start, end, date=buy_date)
+
+
+    confidences = []
+    sell_date = buy_date + datetime.timedelta(days=holding_time)
+
+    for t in tickers:
+        confidences.append(Analysis.analyze(t, desiredConfidence=confidence, start_date=buy_date, end_date=sell_date))
+        #TODO logical issue: analysis is meant to predict AFTER the given period, not during
+    #closes = yf.Ticker(tickers[0]).history(start=buy_date, end=sell_date)["Close"][0:5]
+    #print(closes)
+
+    purchases = []
+    returns = []
+    for t in tickers:
+        if confidences[i] > 0:
+            buy_percent = confidences[i] / sum(confidences)
+            purchases.append(f"{t}: {buy_percent*100}%")
+            closes = yf.Ticker(t).history(start=buy_date, end=sell_date, interval="1d")["Close"]
+            return_percent = closes[len(closes)-1] / closes[0]
+            returns.append(f"{t}: {(return_percent - 1) * 100}%")
+
+    print("I would have invested the following percentages into these stocks:")
+    print(purchases)
+    print("and earned the following returns:")
+    print(returns)
 
 def invest(amount, confidence, stocks, start=0, end='max'):
 
@@ -47,7 +82,7 @@ def invest(amount, confidence, stocks, start=0, end='max'):
             shares = math.floor((cash_on_hand / price) * buy)
             amount = price * shares
             log(datetime.datetime.now(), tickers[i], shares, amount)
-            orders.create_order(tickers[i], shares, "buy", type='market', time_in_force='gtc')
+            orders.create_order(tickers[i], shares, "buy", type='limit', time_in_force='gtc', limit_price=price * 1.01)
 
 def close_day():
 
@@ -92,6 +127,12 @@ def log(time, stock, shares, amount, outstanding = True):
     with open("tradebook.json", 'w') as f:
         json.dump(trades, f, indent=2)
 
+def closeTrades():
+    with open("tradebook.json", 'r') as f:
+        trades = json.load(f)
+    for trade in trades["outstanding"]:
+        #orders.sell(trade["Stock"], trade["Shares"])
+        pass
 
 def clearTradeBook():
     with open("tradebook.json", 'r') as f:
@@ -117,11 +158,27 @@ def plot(t, start = datetime.date.today() - datetime.timedelta(days=30), end = d
 def order(s, q, side, type, tif='day'):
     print(orders.create_order(s, q, side, type, tif))
 
-while True:
-    i = input("What is your command? >>>")
-    if i == "exit":
-        exit()
-    exec(i)
+def analyze(symbol):
+    return Analysis.analyze(symbol)
+
+def o(a, b, c=8):
+    tlist = PickStocks.search(10, start=a, end=b)
+    for t in tlist:
+        Analysis.analyze(t, desiredConfidence=c)
+
+def update_library():
+    allCompanies = pd.read_html('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
+
+    df = allCompanies[0]
+
+    df.to_csv('S&P500-Info.csv')
+
+if __name__ == "__main__":
+    while True:
+        i = input("What is your command? >>>")
+        if i == "exit":
+            exit()
+        exec(i)
 
 
 

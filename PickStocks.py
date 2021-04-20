@@ -1,7 +1,7 @@
 import pandas as pd
 import yfinance as yf
-from random import randint
 import datetime
+import time
 
 import Analysis
 
@@ -25,7 +25,7 @@ def make_stock():
     return s
 
 
-def search(numStocks, start=0, end=len(df["Symbol"]) - 1):
+def search(numStocks, start=0, end=len(df["Symbol"]) - 1, date=datetime.date.today()):
     tickers = []
 
     for i in range(0, numStocks):
@@ -38,14 +38,14 @@ def search(numStocks, start=0, end=len(df["Symbol"]) - 1):
         ticker = yf.Ticker(stock)
 
         try:
-            tHist = ticker.history(start=datetime.date.today() - datetime.timedelta(days=5), period="1d")["Close"]
+            tHist = ticker.history(start=date - datetime.timedelta(days=5), period="1d")["Close"]
             today = tHist[len(tHist) - 1]
             yesterday = tHist[len(tHist) - 2]
         except:
             continue
         delta = (today / yesterday - 1) * 100
 
-        print(f'The ticker {stock} went up by {delta} %')
+        progressBar(i, end - start)
 
         for item in tickers:
             if delta > item.delta:
@@ -59,14 +59,16 @@ def search(numStocks, start=0, end=len(df["Symbol"]) - 1):
 
     return ret
 
+def progressBar(current, total, barLength = 20):
+    percent = float(current) * 100 / total
+    arrow   = '-' * int(percent/100 * barLength - 1) + '>'
+    spaces  = ' ' * (barLength - len(arrow))
+    hmm ='Progress: [%s%s] %d %%' % (arrow, spaces, percent)
+    print(hmm, end='\x1b[2K\r')
+    print()
 
-#Analysis.plot("BAC", datetime.date.today() - datetime.timedelta(days=30), datetime.date.today())
-
-'''
-tHist = yf.Ticker("NFLX").history(start=datetime.date.today() - datetime.timedelta(days=2), period="1d")["Close"]
-today = tHist[1]
-yesterday = tHist[0]
-print(tHist)
-print(tHist[0])
-print(tHist[1])
-'''
+if __name__ == '__main__':
+    progressBar(50, 100)
+    for i in range (0, 3):
+        print('abc'[i], end='\r')
+        time.sleep(1)

@@ -1,4 +1,6 @@
+from config import *
 import requests, json
+
 from config import *
 
 account_url = f"{base_url}/v2/account"
@@ -12,16 +14,26 @@ def get_account():
     return json.loads(r.content)
 
 
-def create_order(symbol, qty, side, type, time_in_force):
-    data = {
-        "symbol": symbol,
-        "qty": qty,
-        "side": side,
-        "type": type,
-        "time_in_force": time_in_force
-    }
+def create_order(symbol, qty, side, type, time_in_force, limit_price='null'):
+
+    if type == 'limit':
+        data = {
+            "symbol": symbol,
+            "qty": qty,
+            "side": side,
+            "type": type,
+            "time_in_force": time_in_force,
+            "limit_price": limit_price
+        }
+    elif type == 'market':
+        data = {
+            "symbol": symbol,
+            "qty": qty,
+            "side": side,
+            "type": type,
+            "time_in_force": time_in_force
+        }
 
     r = requests.post(orders_url, json=data, headers=headers)
 
     return json.loads(r.content)
-
