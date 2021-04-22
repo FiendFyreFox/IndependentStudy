@@ -59,14 +59,17 @@ def analyze(TMax, desiredTrend=15, desiredConfidence = 3.0, start_date=None, end
     y=np.array(data)
     z = np.polyfit(x,y,1)
 
-    confidence = z[0] * 1000 + (yDelta / stdDev) - (stdDev)
+    confidence = z[0] * 2000 + (yDelta / stdDev) - (stdDev)
 
-    if z[0] * 100 >= desiredTrend / 100 and yDelta > stdDev and confidence > desiredConfidence:
+    if z[0] * 100 >= desiredTrend / 100 and yDelta > stdDev and confidence > desiredConfidence: #TODO Solve this gibberish
         print(f"I recommend investing in {TMax} stock because it is trending at {z[0] * 100} and recently broke 1 standard deviation by {((yDelta / stdDev) - 1) * 100} %. My confidence in this stock is {confidence}")
         #plt.plot(normalizedCloses)
         #plt.title(TMax)
         #plt.show()
         return confidence
+    elif confidence > desiredConfidence:
+        print(f"I somewhat recommend investing in {TMax} stock, however it fails to meet certain thresholds.")
+        return confidence - 1
     else:
         print(f"I do not recommend {TMax} stock (confidence: {confidence})")
         return 0.0

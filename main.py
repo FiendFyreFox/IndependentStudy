@@ -48,13 +48,15 @@ def backtest(stocks, start_date, holding_time, confidence=5, start=0, end='max')
 
     purchases = []
     returns = []
+    i=0
     for t in tickers:
         if confidences[i] > 0:
             buy_percent = confidences[i] / sum(confidences)
             purchases.append(f"{t}: {buy_percent*100}%")
-            closes = yf.Ticker(t).history(start=buy_date, end=sell_date, interval="1d")["Close"]
+            closes = yf.Ticker(t).history(start=sell_date, end=sell_date + datetime.timedelta(days=7), interval="1d")["Close"] #TODO add parameter for hold time after purchase
             return_percent = closes[len(closes)-1] / closes[0]
             returns.append(f"{t}: {(return_percent - 1) * 100}%")
+        i += 1
 
     print("I would have invested the following percentages into these stocks:")
     print(purchases)
@@ -175,7 +177,7 @@ def update_library():
 
 if __name__ == "__main__":
     while True:
-        i = input("What is your command? >>>")
+        i = input("What is your command? >>> ")
         if i == "exit":
             exit()
         exec(i)
